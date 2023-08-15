@@ -1,0 +1,10 @@
+IntegrationEventLogEF/bin/Debug/net7.0/publish/Azure.Core.dll
+*.suo
+*.user
+_ReSharper.*
+bin
+obj
+.vscode
+packages
+.idea
+exsit
