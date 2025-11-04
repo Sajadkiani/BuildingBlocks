@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventBus", "EventBus\EventB
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{083C63E4-8CEF-445D-AACE-143030AF834B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppEvents", "AppEvents\AppEvents.csproj", "{B0521C71-FA2E-458D-B7B0-4389D3E0E686}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{083C63E4-8CEF-445D-AACE-143030AF834B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{083C63E4-8CEF-445D-AACE-143030AF834B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{083C63E4-8CEF-445D-AACE-143030AF834B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0521C71-FA2E-458D-B7B0-4389D3E0E686}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0521C71-FA2E-458D-B7B0-4389D3E0E686}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0521C71-FA2E-458D-B7B0-4389D3E0E686}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0521C71-FA2E-458D-B7B0-4389D3E0E686}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

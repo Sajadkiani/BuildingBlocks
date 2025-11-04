@@ -1,6 +1,6 @@
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
-namespace IntegrationEventLogEF.Services;
+namespace AppEvents;
 
 public class IntegrationEvent
 {        
