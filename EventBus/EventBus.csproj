@@ -5,14 +5,17 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-
+    
     <ItemGroup>
-      <PackageReference Include="MassTransit.Abstractions" Version="8.0.15" />
-      <PackageReference Include="MediatR.Contracts" Version="2.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="2.2.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+        <PackageReference Include="RabbitMQ.Client" Version="7.1.2" />
+        <PackageReference Include="MediatR" Version="13.1.0" />
     </ItemGroup>
-
+    
     <ItemGroup>
-      <ProjectReference Include="..\IntegrationEventLogEF\IntegrationEventLogEF.csproj" />
+      <ProjectReference Include="..\AppEvents\AppEvents.csproj" />
     </ItemGroup>
-
 </Project>
