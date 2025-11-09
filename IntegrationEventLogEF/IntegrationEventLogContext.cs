@@ -1,23 +1,23 @@
 ﻿namespace IntegrationEventLogEF;
 
-public class IntegrationEventLogContext : DbContext
+public class EventLogDbContext : DbContext
 {
     public int Manual { get; set; }
 
-    public IntegrationEventLogContext(DbContextOptions<IntegrationEventLogContext> options) : base(options)
+    public EventLogDbContext(DbContextOptions<EventLogDbContext> options) : base(options)
     {
     }
 
-    public DbSet<IntegrationEventLogEntry> IntegrationEventLogs { get; set; }
+    public DbSet<AppEventLog> EventLogs { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
-        builder.Entity<IntegrationEventLogEntry>(ConfigureIntegrationEventLogEntry);
+        builder.Entity<AppEventLog>(ConfigureIntegrationEventLogEntry);
     }
 
-    void ConfigureIntegrationEventLogEntry(EntityTypeBuilder<IntegrationEventLogEntry> builder)
+    void ConfigureIntegrationEventLogEntry(EntityTypeBuilder<AppEventLog> builder)
     {
-        builder.ToTable("IntegrationEventLog");
+        builder.ToTable("EventLogs");
 
         builder.HasKey(e => e.EventId);
 

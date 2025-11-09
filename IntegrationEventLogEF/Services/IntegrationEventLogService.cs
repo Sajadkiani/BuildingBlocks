@@ -4,45 +4,34 @@ namespace IntegrationEventLogEF.Services;
 
 public class IntegrationEventLogService : IIntegrationEventLogService, IDisposable
 {
-    private readonly IntegrationEventLogContext integrationEventLogContext;
-    private readonly DbConnection dbConnection;
+    private readonly EventLogDbContext _eventLogDbContext;
     private readonly List<Type> eventTypes;
     private volatile bool disposedValue;
 
-    public IntegrationEventLogService(DbConnection dbConnection)
+    public IntegrationEventLogService(
+        EventLogDbContext eventLogDbContext)
     {
-        dbConnection = dbConnection ?? throw new ArgumentNullException(nameof(dbConnection));
-        integrationEventLogContext = new IntegrationEventLogContext(
-            new DbContextOptionsBuilder<IntegrationEventLogContext>()
-                .UseSqlServer(dbConnection)
-                .Options);
+        _eventLogDbContext = eventLogDbContext;
     }
 
-    public async Task<IEnumerable<IntegrationEventLogEntry>> RetrieveEventLogsPendingToPublishAsync(Guid transactionId)
+    public async Task<IEnumerable<AppEventLog>> RetrieveEventLogsPendingToPublishAsync(Guid transactionId)
     {
         var tid = transactionId.ToString();
 
-        return await integrationEventLogContext.IntegrationEventLogs
+        return await _eventLogDbContext.EventLogs
             .Where(e => e.TransactionId == tid && e.State == EventStateEnum.NotPublished).ToListAsync();
     }
 
     public Task SaveEventAsync<TEvent>(TEvent @event, IDbContextTransaction transaction)
     {
-        if (transaction == null || @event is null) throw new ArgumentNullException(nameof(transaction));
+        if (transaction == null || @event is null) 
+            throw new ArgumentNullException(nameof(transaction));
 
-        var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        var eventLogEntry = new AppEventLog(@event, transaction.TransactionId, @event.GetType());
 
-        var eventEnvironmentType = EventEnvironmentType.Production;
-        if (string.Equals(env, "Development", StringComparison.Ordinal))
-            eventEnvironmentType = EventEnvironmentType.Development;
-
-        //TODO: get event environment type form outside
-        var eventLogEntry = new IntegrationEventLogEntry(@event, transaction.TransactionId, @event.GetType(), eventEnvironmentType);
-
-        integrationEventLogContext.Database.UseTransaction(transaction.GetDbTransaction());
-        integrationEventLogContext.IntegrationEventLogs.Add(eventLogEntry);
-
-        return integrationEventLogContext.SaveChangesAsync();
+        _eventLogDbContext.Database.UseTransaction(transaction.GetDbTransaction());
+        _eventLogDbContext.EventLogs.Add(eventLogEntry);
+        return _eventLogDbContext.SaveChangesAsync();
     }
 
     public Task MarkEventAsPublishedAsync(Guid eventId)
@@ -62,15 +51,15 @@ public class IntegrationEventLogService : IIntegrationEventLogService, IDisposab
 
     private Task UpdateEventStatus(Guid eventId, EventStateEnum status)
     {
-        var eventLogEntry = integrationEventLogContext.IntegrationEventLogs.Single(ie => ie.EventId == eventId);
+        var eventLogEntry = _eventLogDbContext.EventLogs.Single(ie => ie.EventId == eventId);
         eventLogEntry.State = status;
 
         if (status == EventStateEnum.InProgress)
             eventLogEntry.TimesSent++;
 
-        integrationEventLogContext.IntegrationEventLogs.Update(eventLogEntry);
+        _eventLogDbContext.EventLogs.Update(eventLogEntry);
 
-        return integrationEventLogContext.SaveChangesAsync();
+        return _eventLogDbContext.SaveChangesAsync();
     }
 
     protected virtual void Dispose(bool disposing)
@@ -79,7 +68,7 @@ public class IntegrationEventLogService : IIntegrationEventLogService, IDisposab
         {
             if (disposing)
             {
-                integrationEventLogContext?.Dispose();
+                _eventLogDbContext?.Dispose();
             }
 
 
