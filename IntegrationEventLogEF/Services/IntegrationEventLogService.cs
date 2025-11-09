@@ -1,24 +1,63 @@
 ﻿using Microsoft.eShopOnContainers.BuildingBlocks.IntegrationEventLogEF;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace IntegrationEventLogEF.Services;
 
 public class IntegrationEventLogService : IIntegrationEventLogService, IDisposable
 {
-    private readonly EventLogDbContext _eventLogDbContext;
+    private readonly ILogger<IntegrationEventLogService> _logger;
+    private readonly EventLogDbContext _dbContext;
     private readonly List<Type> eventTypes;
     private volatile bool disposedValue;
 
     public IntegrationEventLogService(
+        ILogger<IntegrationEventLogService> logger,
         EventLogDbContext eventLogDbContext)
     {
-        _eventLogDbContext = eventLogDbContext;
+        _logger = logger;
+        _dbContext = eventLogDbContext;
+    }
+    
+    public async Task PublishEventsThroughEventBusAsync(Guid transactionId)
+    {
+        var pendingLogEvents = await RetrieveEventLogsPendingToPublishAsync(transactionId);
+        foreach (var logEvt in pendingLogEvents)
+        {
+            _logger.LogInformation($"publishing event: ({JsonConvert.SerializeObject(logEvt)})");
+
+            var eventType = eventTypes.FirstOrDefault(item => item.Name == logEvt.EventTypeName);
+            if (eventType is null)
+            {
+                throw new Exception("event ");
+            }
+            
+            try
+            {
+                await MarkEventAsInProgressAsync(logEvt.EventId);
+                //await eventBus.Publish(deserializedEvent);
+                await MarkEventAsPublishedAsync(logEvt.EventId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"error publishing event: {JsonConvert.SerializeObject(logEvt)}");
+                await MarkEventAsFailedAsync(logEvt.EventId);
+            }
+        }
+    }
+
+    public async Task AddAndSaveEventAsync<TEvent>(TEvent evt)
+    {
+        _logger.LogInformation($"enqueuing event: {JsonConvert.SerializeObject(evt)}");
+
+        await SaveEventAsync(evt, _dbContext.GetCurrentTransaction());
     }
 
     public async Task<IEnumerable<AppEventLog>> RetrieveEventLogsPendingToPublishAsync(Guid transactionId)
     {
         var tid = transactionId.ToString();
 
-        return await _eventLogDbContext.EventLogs
+        return await _dbContext.EventLogs
             .Where(e => e.TransactionId == tid && e.State == EventStateEnum.NotPublished).ToListAsync();
     }
 
@@ -29,9 +68,9 @@ public class IntegrationEventLogService : IIntegrationEventLogService, IDisposab
 
         var eventLogEntry = new AppEventLog(@event, transaction.TransactionId, @event.GetType());
 
-        _eventLogDbContext.Database.UseTransaction(transaction.GetDbTransaction());
-        _eventLogDbContext.EventLogs.Add(eventLogEntry);
-        return _eventLogDbContext.SaveChangesAsync();
+        _dbContext.Database.UseTransaction(transaction.GetDbTransaction());
+        _dbContext.EventLogs.Add(eventLogEntry);
+        return _dbContext.SaveChangesAsync();
     }
 
     public Task MarkEventAsPublishedAsync(Guid eventId)
@@ -51,15 +90,15 @@ public class IntegrationEventLogService : IIntegrationEventLogService, IDisposab
 
     private Task UpdateEventStatus(Guid eventId, EventStateEnum status)
     {
-        var eventLogEntry = _eventLogDbContext.EventLogs.Single(ie => ie.EventId == eventId);
+        var eventLogEntry = _dbContext.EventLogs.Single(ie => ie.EventId == eventId);
         eventLogEntry.State = status;
 
         if (status == EventStateEnum.InProgress)
             eventLogEntry.TimesSent++;
 
-        _eventLogDbContext.EventLogs.Update(eventLogEntry);
+        _dbContext.EventLogs.Update(eventLogEntry);
 
-        return _eventLogDbContext.SaveChangesAsync();
+        return _dbContext.SaveChangesAsync();
     }
 
     protected virtual void Dispose(bool disposing)
@@ -68,7 +107,7 @@ public class IntegrationEventLogService : IIntegrationEventLogService, IDisposab
         {
             if (disposing)
             {
-                _eventLogDbContext?.Dispose();
+                _dbContext?.Dispose();
             }
 
 

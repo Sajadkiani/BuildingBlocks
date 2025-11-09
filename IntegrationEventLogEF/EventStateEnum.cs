@@ -1,4 +1,4 @@
-﻿namespace Microsoft.eShopOnContainers.BuildingBlocks.IntegrationEventLogEF;
+﻿namespace IntegrationEventLogEF;
 
 public enum EventStateEnum
 {

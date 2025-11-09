@@ -3,7 +3,10 @@
 public class EventLogDbContext : DbContext
 {
     public int Manual { get; set; }
-
+    
+    private IDbContextTransaction currentTransaction;
+    public IDbContextTransaction GetCurrentTransaction() => currentTransaction;
+    public bool HasActiveTransaction => currentTransaction != null;
     public EventLogDbContext(DbContextOptions<EventLogDbContext> options) : base(options)
     {
     }

@@ -2,6 +2,7 @@
 
 public interface IIntegrationEventLogService
 {
+    Task PublishEventsThroughEventBusAsync(Guid transactionId);
     Task<IEnumerable<AppEventLog>> RetrieveEventLogsPendingToPublishAsync(Guid transactionId);
     Task SaveEventAsync<TEvent>(TEvent @event, IDbContextTransaction transaction);
     Task MarkEventAsPublishedAsync(Guid eventId);
