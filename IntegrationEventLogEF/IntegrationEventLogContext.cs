@@ -7,7 +7,7 @@ public class EventLogDbContext : DbContext
     private IDbContextTransaction currentTransaction;
     public IDbContextTransaction GetCurrentTransaction() => currentTransaction;
     public bool HasActiveTransaction => currentTransaction != null;
-    public EventLogDbContext(DbContextOptions<EventLogDbContext> options) : base(options)
+    public EventLogDbContext(DbContextOptions options) : base(options)
     {
     }
 
