@@ -1,6 +1,7 @@
 ﻿using EventBus.MtuBus.Consumers;
 using EventBus.MtuBus.Options;
 using EventBus.MtuBus.Tests;
+using EventBus.Services;
 using Identity.Infrastructure.MtuBus;
 using Identity.Infrastructure.MtuBus.Consumers;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +20,7 @@ public static class MtuEventBusExtension
 
         services.AddSingleton<IMtuBusConnectionManager, MtuBusConnectionManager>();
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+        services.AddScoped<IIntegrationEventLogService, IntegrationEventLogService>();
         services.AddSingleton<IIntegrationEventDispatcher, IntegrationEventDispatcher>(opt =>
         {
             var logger = opt.GetRequiredService<ILogger<IntegrationEventDispatcher>>();
