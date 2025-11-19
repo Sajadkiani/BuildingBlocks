@@ -1,4 +1,7 @@
-﻿namespace EventBus;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
+
+namespace EventBus;
 
 public class AppEventLog
 {

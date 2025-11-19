@@ -1,4 +1,8 @@
-﻿namespace EventBus;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage;
+
+namespace EventBus;
 
 public class EventLogDbContext : DbContext
 {

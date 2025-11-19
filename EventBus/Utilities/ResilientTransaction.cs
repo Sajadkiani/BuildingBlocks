@@ -1,4 +1,6 @@
-﻿namespace EventBus.Utilities;
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace EventBus.Utilities;
 
 public class ResilientTransaction
 {

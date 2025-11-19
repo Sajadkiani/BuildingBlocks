@@ -1,4 +1,6 @@
-﻿namespace EventBus.Services;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+
+namespace EventBus.Services;
 
 public interface IIntegrationEventLogService
 {
