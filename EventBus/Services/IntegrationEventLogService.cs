@@ -1,8 +1,7 @@
-﻿using Microsoft.eShopOnContainers.BuildingBlocks.IntegrationEventLogEF;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace IntegrationEventLogEF.Services;
+namespace EventBus.Services;
 
 public class IntegrationEventLogService : IIntegrationEventLogService, IDisposable
 {

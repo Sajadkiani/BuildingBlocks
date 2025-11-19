@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationEventLogEF", "IntegrationEventLogEF\IntegrationEventLogEF.csproj", "{8E681B4B-4ADA-4D77-BC07-2C7F7EFF57A3}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventBus", "EventBus\EventBus.csproj", "{C54B4B70-064A-4C0D-A4DA-88FA93DDF417}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{083C63E4-8CEF-445D-AACE-143030AF834B}"
@@ -20,10 +18,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8E681B4B-4ADA-4D77-BC07-2C7F7EFF57A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8E681B4B-4ADA-4D77-BC07-2C7F7EFF57A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8E681B4B-4ADA-4D77-BC07-2C7F7EFF57A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8E681B4B-4ADA-4D77-BC07-2C7F7EFF57A3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C54B4B70-064A-4C0D-A4DA-88FA93DDF417}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C54B4B70-064A-4C0D-A4DA-88FA93DDF417}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C54B4B70-064A-4C0D-A4DA-88FA93DDF417}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -1,7 +1,6 @@
 ﻿using System.Dynamic;
-using System.Net.Mime;
 
-namespace IntegrationEventLogEF.Services;
+namespace EventBus.Services;
 
 public interface IEventInitializer
 {

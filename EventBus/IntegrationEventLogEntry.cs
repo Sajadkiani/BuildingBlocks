@@ -1,6 +1,4 @@
-﻿using Microsoft.eShopOnContainers.BuildingBlocks.IntegrationEventLogEF;
-
-namespace IntegrationEventLogEF;
+﻿namespace EventBus;
 
 public class AppEventLog
 {
