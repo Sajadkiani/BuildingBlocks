@@ -9,9 +9,7 @@ public class TestConsumer : MtuConsumer
 {
     private readonly IDomainEventDispatcher _eventDispatcher;
     private readonly ILogger<TestConsumer> _logger;
-
-    public string QueueName { get; set; } = nameof(TestIntegrationEvent);
-
+    
     public TestConsumer(
         IDomainEventDispatcher eventDispatcher,
         EventDbContext context,
@@ -20,6 +18,7 @@ public class TestConsumer : MtuConsumer
     {
         _eventDispatcher = eventDispatcher;
         _logger = logger;
+        QueueName = nameof(TestIntegrationEvent);
     }
 
     protected override async Task HandleEventAsync(IntegratedEvent message, CancellationToken cancellationToken)
