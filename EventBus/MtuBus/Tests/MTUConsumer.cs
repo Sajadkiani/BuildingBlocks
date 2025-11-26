@@ -1,6 +1,6 @@
-﻿using Events;
+﻿using EventBus.MtuBus.Consumers;
+using Events;
 using Identity.Infrastructure.MtuBus;
-using Identity.Infrastructure.MtuBus.Consumers;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 

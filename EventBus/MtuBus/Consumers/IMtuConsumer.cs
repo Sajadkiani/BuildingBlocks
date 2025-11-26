@@ -1,4 +1,4 @@
-﻿namespace Identity.Infrastructure.MtuBus.Consumers;
+﻿namespace EventBus.MtuBus.Consumers;
 
 public interface IMtuConsumer
 {
