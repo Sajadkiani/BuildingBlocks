@@ -38,7 +38,7 @@ public static class MtuEventBusExtension
 
     private static void AddMtuConsumer(IServiceCollection services)
     {
-        services.AddScoped<IMtuConsumer, TestConsumer>();
+        services.AddScoped<MtuConsumer, TestConsumer>();
 
         services.AddHostedService<MtuBusHostedService>();
     }
