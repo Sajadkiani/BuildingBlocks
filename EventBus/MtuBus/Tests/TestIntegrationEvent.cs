@@ -2,7 +2,7 @@
 
 namespace Events;
 
-public class TestIntegrationEvent : IntegrationEvent
+public class TestIntegrationEvent : IntegratedEvent
 {
     public string UserName { get; init; }
 }

@@ -2,9 +2,9 @@
 
 namespace AppEvents;
 
-public class IntegrationEvent
+public class IntegratedEvent
 {        
-    public IntegrationEvent()
+    public IntegratedEvent()
     {
         EventId = Guid.NewGuid();
         CreationDate = DateTime.Now;

@@ -1,8 +1,10 @@
 ﻿using System.Text;
+using AppEvents;
 using Identity.Infrastructure.MtuBus.Consumers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -32,7 +34,7 @@ public class MtuBusHostedService : BackgroundService
         _channel = await connection.CreateChannelAsync(null, cancellationToken);
 
         using var startupScope = _serviceProvider.CreateScope();
-        var consumers = startupScope.ServiceProvider.GetServices<IMtuConsumer>().ToList();
+        var consumers = startupScope.ServiceProvider.GetServices<MtuConsumer>().ToList();
         foreach (var consumer in consumers)
         {
             await _channel.QueueDeclareAsync(
