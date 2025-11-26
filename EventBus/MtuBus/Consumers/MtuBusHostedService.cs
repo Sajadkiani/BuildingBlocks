@@ -55,7 +55,7 @@ public class MtuBusHostedService : BackgroundService
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Error processing message from {QueueName}: {Json}", consumer.QueueName, json);
+                    _logger.LogError(ex, $"Error processing message from {consumer.QueueName}: {json}");
                     await _channel.BasicNackAsync(ea.DeliveryTag, false, requeue: false, cancellationToken);
                 }
             };
@@ -66,9 +66,9 @@ public class MtuBusHostedService : BackgroundService
                 consumer: rabbitConsumer,
                 cancellationToken: cancellationToken);
 
-            _logger.LogInformation("Consumer for queue {QueueName} started", consumer.QueueName);
+            _logger.LogInformation($"Consumer for queue {consumer.QueueName} started");
         }
 
-        _logger.LogInformation("MTU bus started with {Count} consumers.", consumers.Count());
+        _logger.LogInformation($"MTU bus started with {consumers.Count()} consumers.");
     }
 }
