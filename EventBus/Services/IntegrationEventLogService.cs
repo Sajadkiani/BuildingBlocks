@@ -8,13 +8,13 @@ namespace EventBus.Services;
 public class IntegrationEventLogService : IIntegrationEventLogService, IDisposable
 {
     private readonly ILogger<IntegrationEventLogService> _logger;
-    private readonly EventLogDbContext _dbContext;
+    private readonly EventDbContext _dbContext;
     private readonly List<Type> eventTypes;
     private volatile bool disposedValue;
 
     public IntegrationEventLogService(
         ILogger<IntegrationEventLogService> logger,
-        EventLogDbContext eventLogDbContext)
+        EventDbContext eventLogDbContext)
     {
         _logger = logger;
         _dbContext = eventLogDbContext;
@@ -54,12 +54,13 @@ public class IntegrationEventLogService : IIntegrationEventLogService, IDisposab
         await SaveEventAsync(evt, _dbContext.GetCurrentTransaction());
     }
 
-    public async Task<IEnumerable<AppEventLog>> RetrieveEventLogsPendingToPublishAsync(Guid transactionId)
+    public async Task<IEnumerable<AppEvent>> RetrieveEventLogsPendingToPublishAsync(Guid transactionId)
     {
         var tid = transactionId.ToString();
 
-        return await _dbContext.EventLogs
-            .Where(e => e.TransactionId == tid && e.State == EventStateEnum.NotPublished).ToListAsync();
+        return await _dbContext.AppEvents
+            .Where(e => e.TransactionId == tid 
+                        && e.State == EventStateEnum.NotPublished).ToListAsync();
     }
 
     public Task SaveEventAsync<TEvent>(TEvent @event, IDbContextTransaction transaction)
@@ -67,10 +68,10 @@ public class IntegrationEventLogService : IIntegrationEventLogService, IDisposab
         if (transaction == null || @event is null) 
             throw new ArgumentNullException(nameof(transaction));
 
-        var eventLogEntry = new AppEventLog(@event, transaction.TransactionId, @event.GetType());
+        var eventLogEntry = new AppEvent(@event, transaction.TransactionId, @event.GetType());
 
         _dbContext.Database.UseTransaction(transaction.GetDbTransaction());
-        _dbContext.EventLogs.Add(eventLogEntry);
+        _dbContext.AppEvents.Add(eventLogEntry);
         return _dbContext.SaveChangesAsync();
     }
 
@@ -91,13 +92,13 @@ public class IntegrationEventLogService : IIntegrationEventLogService, IDisposab
 
     private Task UpdateEventStatus(Guid eventId, EventStateEnum status)
     {
-        var eventLogEntry = _dbContext.EventLogs.Single(ie => ie.EventId == eventId);
+        var eventLogEntry = _dbContext.AppEvents.Single(ie => ie.EventId == eventId);
         eventLogEntry.State = status;
 
         if (status == EventStateEnum.InProgress)
             eventLogEntry.TimesSent++;
 
-        _dbContext.EventLogs.Update(eventLogEntry);
+        _dbContext.AppEvents.Update(eventLogEntry);
 
         return _dbContext.SaveChangesAsync();
     }

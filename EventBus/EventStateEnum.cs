@@ -7,4 +7,3 @@ public enum EventStateEnum
     Published = 2,
     PublishedFailed = 3
 }
-

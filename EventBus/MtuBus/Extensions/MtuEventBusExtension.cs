@@ -45,7 +45,7 @@ public static class MtuEventBusExtension
 
     private static void AddMtuPublisher(IServiceCollection services, string dbConnectionString)
     {
-        services.AddDbContext<EventLogDbContext>(opt => opt.UseSqlServer(dbConnectionString));
+        services.AddDbContext<EventDbContext>(opt => opt.UseSqlServer(dbConnectionString));
         services.AddSingleton<IMtuBusConnectionManager, MtuBusConnectionManager>();
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddScoped<IIntegrationEventLogService, IntegrationEventLogService>();

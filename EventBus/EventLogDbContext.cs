@@ -4,27 +4,52 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace EventBus;
 
-public class EventLogDbContext : DbContext
+public class EventDbContext : DbContext
 {
     public int Manual { get; set; }
     
     private IDbContextTransaction currentTransaction;
     public IDbContextTransaction GetCurrentTransaction() => currentTransaction;
     public bool HasActiveTransaction => currentTransaction != null;
-    public EventLogDbContext(DbContextOptions options) : base(options)
+    public EventDbContext(DbContextOptions options) : base(options)
     {
     }
 
-    public DbSet<AppEventLog> EventLogs { get; set; }
+    public DbSet<AppEvent> AppEvents { get; set; }
+    public DbSet<AppReceivedEvent> AppReceivedEvents { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
-        builder.Entity<AppEventLog>(ConfigureIntegrationEventLogEntry);
+        builder.Entity<AppEvent>(ConfigureAppEventEntry);
+        builder.Entity<AppReceivedEvent>(ConfigureAppReceivedEventEntry);
     }
 
-    void ConfigureIntegrationEventLogEntry(EntityTypeBuilder<AppEventLog> builder)
+    private void ConfigureAppReceivedEventEntry(EntityTypeBuilder<AppReceivedEvent> builder)
     {
-        builder.ToTable("EventLogs");
+        builder.ToTable("AppReceivedEvents");
+
+        builder.HasKey(e => e.Id);
+        
+        builder.Property(e => e.EventId)
+            .IsRequired()
+            .HasMaxLength(33);
+
+        builder.Property(e => e.Content)
+            .IsRequired();
+
+        builder.Property(e => e.ReceivedOn)
+            .IsRequired();
+
+        builder.Property(e => e.State)
+            .IsRequired();
+
+        builder.Property(e => e.EventTypeName)
+            .IsRequired();    
+    }
+
+    void ConfigureAppEventEntry(EntityTypeBuilder<AppEvent> builder)
+    {
+        builder.ToTable("AppEvents");
 
         builder.HasKey(e => e.EventId);
 

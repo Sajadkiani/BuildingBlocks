@@ -3,10 +3,10 @@ using System.Text.Json;
 
 namespace EventBus;
 
-public class AppEventLog
+public class AppEvent
 {
-    private AppEventLog() { }
-    public AppEventLog(dynamic @event, Guid transactionId, Type type)
+    private AppEvent() { }
+    public AppEvent(dynamic @event, Guid transactionId, Type type)
     {
         EventId = (Guid)@event.Id;
         CreationTime = @event.CreationDate;
