@@ -25,11 +25,11 @@ public class TestConsumer : MtuConsumer
     {
         if (message is not TestIntegrationEvent testEvent)
         {
-            _logger.LogWarning($"Received wrong event type for {QueueName}. Event was: {message.FullName}");
+            _logger.LogError($"Received wrong event type for queue {QueueName}. EventId : {message.EventId} fullname: {message.FullName}");
             return;
         }
 
-        _logger.LogInformation($"Processing message for {QueueName}");
+        _logger.LogInformation($"Received message id {message.EventId}, name {message.FullName} queue {QueueName}");
 
         await _eventDispatcher.PublishAsync(new TestDomainEvent(testEvent.UserName));
     }
