@@ -1,4 +1,5 @@
 ﻿using AppDomain.SeedWork;
+using EventBus.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -8,6 +9,7 @@ namespace EventBus;
 
 public class EventDbContext : DbContext
 {
+    private readonly IIntegrationEventLogService _integrationEventLogService;
     private readonly IMediator _mediator;
     public int Manual { get; set; }
     
@@ -16,8 +18,10 @@ public class EventDbContext : DbContext
     public bool HasActiveTransaction => currentTransaction != null;
     public EventDbContext(
         DbContextOptions options,
+        IIntegrationEventLogService  integrationEventLogService,
         IMediator mediator) : base(options)
     {
+        _integrationEventLogService = integrationEventLogService;
         _mediator = mediator;
     }
 
@@ -32,25 +36,37 @@ public class EventDbContext : DbContext
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
     {
-        var entries = ChangeTracker
-            .Entries()
-            .Where(e => e.State == EntityState.Modified || e.State == EntityState.Added)
+        var domainEntities = ChangeTracker
+            .Entries<Entity>()
+            .Where(x => (x.State == EntityState.Modified || x.State == EntityState.Added)
+                        && x.Entity.DomainEvents != null && x.Entity.DomainEvents.Any())
+            .Select(x => x.Entity)
+            .ToList();
+
+        //domain events
+        var domainEvents = domainEntities
+            .SelectMany(x => x.DomainEvents)
+            .ToList();
+        domainEntities.ForEach(entity => entity.ClearDomainEvents());
+
+        //save integrated events in outbox
+        var integrationEvents = domainEntities
+            .SelectMany(item => item.IntegratedEvents)
             .ToList();
         
-        if (!entries.Any())
-            return 0;
-        
-        var events = entries.Where(item => item.Entity is Entity)
-            .Select(item => (Entity)item.Entity)
-            .SelectMany(item => item.DomainEvents)
-            .ToList();
-        
-        foreach (var @event in events)
+        foreach (var integrationEvent in integrationEvents)
         {
-            await _mediator.Publish(@event, cancellationToken);
+            await _integrationEventLogService.SaveEventAsync(integrationEvent, currentTransaction);
         }
         
-        return await base.SaveChangesAsync(cancellationToken);
+        
+        var countOfChanges = await base.SaveChangesAsync(cancellationToken);
+        foreach (var domainEvent in domainEvents)
+        {
+            await _mediator.Publish(domainEvent, cancellationToken);
+        }
+
+        return countOfChanges;
     }
 
     private void ConfigureAppReceivedEventEntry(EntityTypeBuilder<AppReceivedEvent> builder)
