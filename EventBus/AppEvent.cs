@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
+using AppDomain.SeedWork;
 
 namespace EventBus;
 
-public class AppEvent
+public class AppEvent : Entity
 {
     private AppEvent() { }
     public AppEvent(dynamic @event, Guid transactionId, Type type)

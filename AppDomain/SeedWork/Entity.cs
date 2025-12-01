@@ -1,4 +1,5 @@
 ﻿
+using AppEvents;
 using MediatR;
 
 namespace AppDomain.SeedWork;
@@ -21,6 +22,9 @@ public abstract class Entity
 
     private List<INotification> _domainEvents;
     public IReadOnlyCollection<INotification> DomainEvents => _domainEvents?.AsReadOnly();
+    
+    private List<IntegratedEvent> _integratedEvents;
+    public IReadOnlyCollection<IntegratedEvent> IntegratedEvents => _integratedEvents?.AsReadOnly();
 
     public void AddDomainEvent(INotification eventItem)
     {
@@ -37,7 +41,23 @@ public abstract class Entity
     {
         _domainEvents?.Clear();
     }
+    
+    public void AddIntegratedEvent(IntegratedEvent eventItem)
+    {
+        _integratedEvents ??= [];
+        _integratedEvents.Add(eventItem);
+    }
 
+    public void RemoveIntegratedEvent(IntegratedEvent eventItem)
+    {
+        _integratedEvents?.Remove(eventItem);
+    }
+
+    public void ClearIntegratedEvents()
+    {
+        _integratedEvents?.Clear();
+    }
+    
     public bool IsTransient()
     {
         return this.Id == default(Int32);

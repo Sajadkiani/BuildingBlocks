@@ -1,6 +1,8 @@
+using AppDomain.SeedWork;
+
 namespace EventBus;
 
-public class AppReceivedEvent
+public class AppReceivedEvent : Entity
 {
     private AppReceivedEvent()
     {

@@ -8,4 +8,7 @@
     <ItemGroup>
         <PackageReference Include="MediatR" Version="13.1.0" />
     </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\AppEvents\AppEvents.csproj" />
+    </ItemGroup>
 </Project>
