@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
+using RabbitMQ.Client.Exceptions;
 
 namespace EventBus.MtuBus.Consumers;
 
@@ -30,47 +31,54 @@ public class MtuBusHostedService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        var connection = await _connectionManager.GetConnectionAsync();
-        _channel = await connection.CreateChannelAsync(null, cancellationToken);
-
-        using var startupScope = _serviceProvider.CreateScope();
-        var consumers = startupScope.ServiceProvider.GetServices<MtuConsumer>().ToList();
-        foreach (var consumer in consumers)
+        try
         {
-            await _channel.QueueDeclareAsync(
-                queue: consumer.QueueName,
-                durable: true,
-                exclusive: false,
-                autoDelete: false,
-                arguments: null,
-                cancellationToken: cancellationToken);
+            var connection = await _connectionManager.GetConnectionAsync();
+            _channel = await connection.CreateChannelAsync(null, cancellationToken);
 
-            var rabbitConsumer = new AsyncEventingBasicConsumer(_channel);
-
-            rabbitConsumer.ReceivedAsync += async (_, ea) =>
+            using var startupScope = _serviceProvider.CreateScope();
+            var consumers = startupScope.ServiceProvider.GetServices<MtuConsumer>().ToList();
+            foreach (var consumer in consumers)
             {
-                var json = Encoding.UTF8.GetString(ea.Body.ToArray());
-                try
-                {
-                    await consumer.HandleAsync(json, cancellationToken);
-                    await _channel.BasicAckAsync(ea.DeliveryTag, false, cancellationToken);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, $"Error processing message from {consumer.QueueName}: {json}");
-                    await _channel.BasicNackAsync(ea.DeliveryTag, false, requeue: false, cancellationToken);
-                }
-            };
+                await _channel.QueueDeclareAsync(
+                    queue: consumer.QueueName,
+                    durable: true,
+                    exclusive: false,
+                    autoDelete: false,
+                    arguments: null,
+                    cancellationToken: cancellationToken);
 
-            await _channel.BasicConsumeAsync(
-                queue: consumer.QueueName,
-                autoAck: false,
-                consumer: rabbitConsumer,
-                cancellationToken: cancellationToken);
+                var rabbitConsumer = new AsyncEventingBasicConsumer(_channel);
 
-            _logger.LogInformation($"Consumer for queue {consumer.QueueName} started");
+                rabbitConsumer.ReceivedAsync += async (_, ea) =>
+                {
+                    var json = Encoding.UTF8.GetString(ea.Body.ToArray());
+                    try
+                    {
+                        await consumer.HandleAsync(json, cancellationToken);
+                        await _channel.BasicAckAsync(ea.DeliveryTag, false, cancellationToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Error processing message from {consumer.QueueName}: {json}");
+                        await _channel.BasicNackAsync(ea.DeliveryTag, false, requeue: false, cancellationToken);
+                    }
+                };
+
+                await _channel.BasicConsumeAsync(
+                    queue: consumer.QueueName,
+                    autoAck: false,
+                    consumer: rabbitConsumer,
+                    cancellationToken: cancellationToken);
+
+                _logger.LogInformation($"Consumer for queue {consumer.QueueName} started");
+            }
+
+            _logger.LogInformation($"MTU bus started with {consumers.Count()} consumers.");
         }
-
-        _logger.LogInformation($"MTU bus started with {consumers.Count()} consumers.");
+        catch (BrokerUnreachableException ex)
+        {
+            _logger.LogError(ex, "Broker unreachable");
+        }
     }
 }
