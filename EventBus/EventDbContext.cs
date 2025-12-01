@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AppDomain.SeedWork;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -6,13 +8,17 @@ namespace EventBus;
 
 public class EventDbContext : DbContext
 {
+    private readonly IMediator _mediator;
     public int Manual { get; set; }
     
     private IDbContextTransaction currentTransaction;
     public IDbContextTransaction GetCurrentTransaction() => currentTransaction;
     public bool HasActiveTransaction => currentTransaction != null;
-    public EventDbContext(DbContextOptions options) : base(options)
+    public EventDbContext(
+        DbContextOptions options,
+        IMediator mediator) : base(options)
     {
+        _mediator = mediator;
     }
 
     public DbSet<AppEvent> AppEvents { get; set; }
@@ -22,6 +28,29 @@ public class EventDbContext : DbContext
     {
         builder.Entity<AppEvent>(ConfigureAppEventEntry);
         builder.Entity<AppReceivedEvent>(ConfigureAppReceivedEventEntry);
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+    {
+        var entries = ChangeTracker
+            .Entries()
+            .Where(e => e.State == EntityState.Modified || e.State == EntityState.Added)
+            .ToList();
+        
+        if (!entries.Any())
+            return 0;
+        
+        var events = entries.Where(item => item.Entity is Entity)
+            .Select(item => (Entity)item.Entity)
+            .SelectMany(item => item.DomainEvents)
+            .ToList();
+        
+        foreach (var @event in events)
+        {
+            await _mediator.Publish(@event, cancellationToken);
+        }
+        
+        return await base.SaveChangesAsync(cancellationToken);
     }
 
     private void ConfigureAppReceivedEventEntry(EntityTypeBuilder<AppReceivedEvent> builder)
