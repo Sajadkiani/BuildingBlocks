@@ -9,7 +9,6 @@ namespace EventBus;
 
 public class EventDbContext : DbContext
 {
-    private readonly IIntegrationEventLogService _integrationEventLogService;
     private readonly IMediator _mediator;
     public int Manual { get; set; }
     
@@ -18,10 +17,8 @@ public class EventDbContext : DbContext
     public bool HasActiveTransaction => currentTransaction != null;
     public EventDbContext(
         DbContextOptions options,
-        IIntegrationEventLogService  integrationEventLogService,
         IMediator mediator) : base(options)
     {
-        _integrationEventLogService = integrationEventLogService;
         _mediator = mediator;
     }
 
