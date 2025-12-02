@@ -34,7 +34,14 @@ public class EventDbContext : DbContext
         builder.Entity<AppReceivedEvent>(ConfigureAppReceivedEventEntry);
     }
 
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+    protected async Task<int> SaveChangesAndSendEventsAsync(IDbContextTransaction contextTransaction,
+        CancellationToken cancellationToken = new CancellationToken())
+    {
+        await Database.UseTransactionAsync(contextTransaction.GetDbTransaction(), cancellationToken);
+        return await SaveChangesAsync(cancellationToken);
+    }
+    
+    private async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
     {
         var domainEntities = ChangeTracker
             .Entries<Entity>()
@@ -56,9 +63,9 @@ public class EventDbContext : DbContext
         
         foreach (var integrationEvent in integrationEvents)
         {
-            await _integrationEventLogService.SaveEventAsync(integrationEvent, currentTransaction);
+            var appEvent = new AppEvent(integrationEvent, currentTransaction.TransactionId, integrationEvent.GetType());
+            await AppEvents.AddAsync(appEvent, cancellationToken);
         }
-        
         
         var countOfChanges = await base.SaveChangesAsync(cancellationToken);
         foreach (var domainEvent in domainEvents)
